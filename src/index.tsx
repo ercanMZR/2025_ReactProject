@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Login from './pages/Login';
 import AppRoutes from './utils/AppRoutes';
 import './utils/site.css';
 
