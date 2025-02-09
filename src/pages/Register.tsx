@@ -1,14 +1,25 @@
 import React, { useState } from 'react'
-import { NavLink,useNavigate } from 'react-router-dom'
- 
-  
+import { NavLink, useNavigate } from 'react-router-dom'
+import { userRegister } from '../services/userService'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function Register() {
+
   const navigate = useNavigate()
+
+  // errors
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
   const fncRegister = ( evt: React.FormEvent ) => {
+    setEmailError('')
+    setPasswordError('')
     evt.preventDefault()
     if (name === '') {
       alert('Please enter your name')
@@ -19,13 +30,40 @@ function Register() {
     }else if( confirmPassword !== password ) {
       alert('Password does not match')
     }else{
-      console.log(name, email, password)
-      // window.location.href = '/' // redirect
-      navigate('/')
+      
+      userRegister(name, email, password).then( res => {
+          const status = res.status
+          const data = res.data
+          if (status === 201) { 
+              toast.success('User registered successfully, plase login')
+              setTimeout(() => {
+                navigate('/')
+              }, 3000);
+          }else {
+            //const message = data.errors?.email?.[0]
+            console.log(data.errors)
+            alert('User already exists')
+          }
+      }).catch( err => {
+          console.log(err)
+          const emailError = err.response.data.errors.email
+          const passwordError = err.response.data.errors.password
+          if (emailError) {
+            setEmailError(emailError[0])
+          }
+          if (passwordError) {
+            setPasswordError(passwordError[0])
+          }
+          //alert(err.response.data.errors.email[0])
+      })
+      
     }
+
   }
+
   return (
     <>
+      <ToastContainer />
       <div className='row'>
         <div className='col-12  col-md-3 col-lg-4'></div>
         <div className='col-12  col-md-6 col-lg-4'>
@@ -38,10 +76,12 @@ function Register() {
             <div className="mb-3">
               <label htmlFor="exampleInputEmail1" className="form-label">Email address</label>
               <input onChange={(evt) => setEmail(evt.target.value)} required type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
+              <div className="form-text text-danger">{emailError}</div>
             </div>
             <div className="mb-3">
               <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
               <input onChange={(evt) => setPassword(evt.target.value)} required type="password" className="form-control" id="exampleInputPassword1" />
+              <div className="form-text text-danger">{passwordError}</div>
             </div>
             <div className="mb-3">
               <label htmlFor="exampleInputPassword2" className="form-label">Confirm Password</label>
@@ -59,5 +99,4 @@ function Register() {
   )
 }
 
-  
-  export default Register
+export default Register
