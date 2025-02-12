@@ -1,22 +1,31 @@
 import React, { useEffect, useState } from 'react'
-import { allProduct } from '../services/productService'
+import { NavLink, useSearchParams } from 'react-router-dom'
 import { Product } from '../models/IProduct'
-import { NavLink } from 'react-router-dom'
+import { productSearch } from '../services/productService'
 import { getSingleLikes } from '../utils/store'
 
-function Products() {
+const Search = () => {
+const [arr, setArr] = useState<Product[]>([])
+const [params,setParams]=useSearchParams()
+const [q,setq]=useState('')
+useEffect(()=>{
+   const q = params.get('q')
 
-  const [arr, setArr] = useState<Product[]>([])
-  useEffect(() => {
-    allProduct('1', '10').then(res => {
-      setArr(res.data.data)
-    })
-  }, [])
+   if(q){
+    setq(q)
+    productSearch(q).then(res=>{
+        setArr(res.data)
+        }).catch(err=>{
+            setq(q+' - Not Found')})
+    
+   }
+},[])
 
-  return (
+
+return (
     <>
-      <h2>Products</h2>
-      <div className='row'>
+        <h2>Search - {q} - ({arr.length})</h2>
+        <div className='row'>
         { arr.map( (item, index) => 
           <div key={index} className='col-sm-4'>
             <div className="card">
@@ -37,4 +46,4 @@ function Products() {
   )
 }
 
-export default Products
+export default Search

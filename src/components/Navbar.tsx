@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { userProfile } from '../services/userService'
 
 function Navbar() {
 
+    const searchRef =useRef<HTMLInputElement>(null)//useRef hook'u ile bir referans oluşturulur.null yapmamızın sebebi başlangıç değerinin null olmasıdır.HtmlInputElement tipinde bir referans oluşturuldu.Bu referans input elementine erişmek için kullanılacaktır.
+    const nameRef=useRef<HTMLAnchorElement>(null)
     const [name, setName] = useState('')
 
     useEffect( () => {
+        if(searchRef.current){
+            searchRef.current.hidden = true
+        }
         const jwt = localStorage.getItem('token')
         if (jwt === null) {
             window.location.href = '/'
@@ -15,12 +20,25 @@ function Navbar() {
                 const userData = res.data
                 if (userData) {
                     setName( userData.data.name )
+                    if(searchRef.current){
+                        searchRef.current.hidden = false
+                        searchRef.current.focus()
+                    }
+                    if(nameRef.current){
+                        nameRef.current.hidden = false
+                        nameRef.current.style.color='red'
+                    }
                 }
             }).catch( err => {
                 localStorage.clear()
                 window.location.href = '/'
             })
         }
+
+        if(searchRef.current){
+            searchRef.current.focus()
+        }
+
     }, [] )
 
     const logout = () => {
@@ -50,18 +68,18 @@ function Navbar() {
                 Profile
             </a>
             <ul className="dropdown-menu">
-                <li><a className="dropdown-item" href="#">Action</a></li>
+                <li><NavLink to={'users'} className="dropdown-item">Users</NavLink></li>
                 <li><a className="dropdown-item" href="#">Another action</a></li>
                 <li><hr className="dropdown-divider" /></li>
                 <li><a className="dropdown-item" role='button' onClick={logout}>Logout</a></li>
             </ul>
             </li>
             <li className="nav-item">
-            <a className="nav-link disabled" aria-disabled="true">{name}</a>
+            <a ref={nameRef} className="nav-link disabled" aria-disabled="true">{name}</a>
             </li>
         </ul>
-        <form className="d-flex" role="search">
-            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+        <form action='/search' className="d-flex" role="search">
+            <input name='q' ref={searchRef} className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
             <button className="btn btn-outline-success" type="submit">Search</button>
         </form>
         </div>
